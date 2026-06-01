@@ -1,0 +1,20 @@
+﻿{
+  "show_origin": true,
+  "keep_origin_open": true,
+  "new_project": true,
+  "input_file": "C:/OriginAI/data/test.xlsx",
+  "sheet_name": 0,
+  "plot": true,
+  "plot_type": "line",
+  "x": "Time",
+  "y": "Temperature",
+  "style": "science",
+  "analysis": { "type": "pca" },
+  "labtalk": "",
+  "origin_python": "",
+  "export": { "paths": ["C:/OriginAI/agent/outputs/pca_test.png"] },
+  "save_project": true,
+  "project_path": "C:/OriginAI/agent/outputs/pca_test.opju",
+  "report": true,
+  "report_path": "C:/OriginAI/agent/outputs/pca_report.md"
+}
