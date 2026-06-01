@@ -1,9 +1,9 @@
-﻿{
-  "show_origin": true,
-  "keep_origin_open": true,
+{
+  "show_origin": false,
+  "keep_origin_open": false,
   "new_project": true,
 
-  "goal": "画所有数值列随时间变化的SCI风格多曲线图",
+  "goal": "画所有数值列随时间变化的SCI风格多曲线图，并执行 v3.5 分析",
   "input_file": "C:/OriginAI/data/test.xlsx",
   "sheet_name": 0,
 
@@ -14,18 +14,54 @@
 
   "style": "science",
 
-  "labtalk": "type -b OriginAgent_v2_OK;",
+  "analysis": [
+    {
+      "type": "statistics"
+    },
+    {
+      "type": "linear_fit",
+      "params": {
+        "x": "Time",
+        "y": "Temperature"
+      }
+    },
+    {
+      "type": "peak_analysis",
+      "params": {
+        "x": "Time",
+        "y": "Temperature"
+      }
+    },
+    {
+      "type": "fft",
+      "params": {
+        "x": "Time",
+        "y": "Temperature"
+      }
+    },
+    {
+      "type": "pca"
+    },
+    {
+      "type": "custom_labtalk",
+      "params": {
+        "script": "type -b Custom_OK;"
+      }
+    }
+  ],
+
+  "labtalk": "type -b OriginAgent_v3_5_OK;",
 
   "origin_python": "print('Origin Python hook OK')",
 
   "export": {
     "paths": [
-      "C:/OriginAI/agent/outputs/v2_demo.png",
-      "C:/OriginAI/agent/outputs/v2_demo.pdf",
-      "C:/OriginAI/agent/outputs/v2_demo.tif"
+      "C:/OriginAI/agent/outputs/v3_5_demo.png",
+      "C:/OriginAI/agent/outputs/v3_5_demo.pdf",
+      "C:/OriginAI/agent/outputs/v3_5_demo.tif"
     ]
   },
 
   "save_project": true,
-  "project_path": "C:/OriginAI/agent/outputs/v2_demo.opju"
+  "project_path": "C:/OriginAI/agent/outputs/v3_5_demo.opju"
 }

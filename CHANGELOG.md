@@ -1,4 +1,12 @@
-﻿# Changelog
+# Changelog
+
+## v3.5.0
+
+- Added JSON `analysis` support for statistics, linear fit, peak analysis, FFT, PCA, and custom LabTalk.
+- Added Markdown reporting to `outputs/report.md`.
+- Added FFT export to `outputs/fft_result.csv`.
+- Added PCA exports to `outputs/pca_scores.csv` and `outputs/pca_loadings.csv`.
+- Kept LabTalk and Origin Python fallback execution paths.
 
 ## v2.0.0
 

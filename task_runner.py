@@ -12,6 +12,7 @@ from tools.project import save_project
 from tools.execute_labtalk import execute as execute_labtalk
 from tools.execute_origin_python import execute as execute_origin_python
 from tools.analysis import run_analysis
+from tools.reporting import write_report
 
 BASE = Path(r"C:\OriginAI\agent")
 
@@ -117,7 +118,8 @@ def run_task(task_path):
 
         if task.get("analysis"):
             log("Running analysis...")
-            outputs["analysis"] = run_analysis(task["analysis"])
+            outputs["analysis"] = run_analysis(task["analysis"], df=df, output_dir=BASE / "outputs")
+            outputs["report"] = write_report(outputs["analysis"], BASE / "outputs" / "report.md")
 
         if task.get("labtalk"):
             log("Running LabTalk...")
