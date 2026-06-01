@@ -1,0 +1,31 @@
+﻿{
+  "show_origin": true,
+  "keep_origin_open": true,
+  "new_project": true,
+
+  "goal": "画所有数值列随时间变化的SCI风格多曲线图",
+  "input_file": "C:/OriginAI/data/test.xlsx",
+  "sheet_name": 0,
+
+  "plot": true,
+  "plot_type": "line",
+  "x": "Time",
+  "auto_all_y": true,
+
+  "style": "science",
+
+  "labtalk": "type -b OriginAgent_v2_OK;",
+
+  "origin_python": "print('Origin Python hook OK')",
+
+  "export": {
+    "paths": [
+      "C:/OriginAI/agent/outputs/v2_demo.png",
+      "C:/OriginAI/agent/outputs/v2_demo.pdf",
+      "C:/OriginAI/agent/outputs/v2_demo.tif"
+    ]
+  },
+
+  "save_project": true,
+  "project_path": "C:/OriginAI/agent/outputs/v2_demo.opju"
+}

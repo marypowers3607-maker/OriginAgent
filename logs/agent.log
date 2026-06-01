@@ -1,0 +1,10 @@
+[2026-06-01 15:57:03.009665] Loading data: C:/OriginAI/data/test.xlsx
+[2026-06-01 15:57:03.454016] Detected columns:
+[2026-06-01 15:57:03.454781]   [0] Time
+[2026-06-01 15:57:03.455232]   [1] Temperature
+[2026-06-01 15:57:03.456132] Selected X: Time
+[2026-06-01 15:57:03.456573] Selected Y: ['Temperature']
+[2026-06-01 15:57:04.200091] Running LabTalk...
+[2026-06-01 15:57:05.243655] Running Origin Python...
+[2026-06-01 15:57:05.249293] Exporting figures...
+[2026-06-01 15:57:06.284220] DONE
