@@ -7,6 +7,19 @@ from pathlib import Path
 BASE = Path(r"C:\OriginAI\agent")
 PLANNED_TASK = BASE / "requests" / "planned_task.json"
 
+COLOR_MAP = {
+    "红色": "red",
+    "蓝色": "blue",
+    "绿色": "green",
+    "黑色": "black",
+}
+
+LINE_STYLE_MAP = {
+    "实线": "solid",
+    "虚线": "dash",
+    "点线": "dot",
+}
+
 
 def plan_task(text):
     task = {
@@ -29,6 +42,10 @@ def plan_task(text):
         task["x"] = xy["x"]
         task["y"] = xy["y"]
 
+    if has_any(text, ["所有数值列", "多曲线", "全部y列", "全部 y 列", "all numeric", "all y"]):
+        task["auto_all_y"] = True
+        task.pop("y", None)
+
     plot_type = extract_plot_type(text)
     if plot_type:
         task["plot"] = True
@@ -41,6 +58,10 @@ def plan_task(text):
     export = extract_export(text)
     if export:
         task["export"] = {"paths": export}
+
+    style_commands = extract_style_commands(text)
+    if style_commands:
+        task["style_commands"] = style_commands
 
     if has_any(text, ["保存 opju", "保存opju", "save opju"]):
         task["save_project"] = True
@@ -136,6 +157,40 @@ def extract_export(text):
     return [str((BASE / "outputs" / f"planned_task.{suffix}")).replace("\\", "/") for suffix in suffixes]
 
 
+def extract_style_commands(text):
+    style = {}
+
+    for keyword, color in COLOR_MAP.items():
+        if keyword in text:
+            style["color"] = color
+            break
+
+    width_match = re.search(r"线宽\s*(?P<width>\d+(?:\.\d+)?)", text, flags=re.IGNORECASE)
+    if width_match:
+        style["line_width"] = float(width_match.group("width"))
+
+    for keyword, line_style in LINE_STYLE_MAP.items():
+        if keyword in text:
+            style["line_style"] = line_style
+            break
+
+    if "Times New Roman" in text:
+        style["font"] = "Times New Roman"
+    elif "Arial" in text:
+        style["font"] = "Arial"
+
+    if not style:
+        return []
+
+    code = "\n".join([
+        "# OriginAgent v4.1 style bridge",
+        "style = " + repr(style),
+        "outputs.setdefault('style_requests', []).append(style)",
+        "# Add project-specific OriginPro graph formatting here when needed.",
+    ])
+    return [{"type": "origin_python", "code": code, "style": style}]
+
+
 def with_xy(analysis_type, x=None, y=None):
     item = {"type": analysis_type}
     if x and y:
@@ -145,7 +200,7 @@ def with_xy(analysis_type, x=None, y=None):
 
 def has_any(text, phrases):
     lower = text.lower()
-    return any(phrase in lower for phrase in phrases)
+    return any(phrase.lower() in lower for phrase in phrases)
 
 
 def clean_column(value):

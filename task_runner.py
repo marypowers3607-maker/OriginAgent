@@ -15,6 +15,9 @@ from tools.execute_labtalk import execute as execute_labtalk
 from tools.execute_origin_python import execute as execute_origin_python
 from tools.analysis import run_analysis
 from tools.reporting import write_report, write_error_report
+from tools.origin_styling import apply_origin_styling
+from tools.templates import resolve_template
+from tools.batch import build_batch_tasks
 
 BASE = Path(r"C:\OriginAI\agent")
 
@@ -106,10 +109,17 @@ def ensure_success(label, result):
         raise RuntimeError(f"{label} failed: {result.get('error')}")
 
 
-def run_task(task_path):
-    task_path = resolve_task_path(task_path)
+def resolve_plot_template(template, plot_type):
+    info = resolve_template(template, plot_type)
+    template_name = info["template"]
+    if info["status"] == "resolved" and template_name in ["line", "scatter", "column"]:
+        return None, template_name
+    return template_name, plot_type
+
+
+def run_task_object(task, task_path="<memory>"):
     start_time = datetime.now()
-    keep_open = True
+    keep_open = task.get("keep_origin_open", True)
     outputs = {}
 
     log("=" * 72)
@@ -117,18 +127,13 @@ def run_task(task_path):
     log(f"Start time: {start_time.isoformat(sep=' ', timespec='seconds')}")
 
     try:
-        task = load_task(task_path)
-        keep_open = task.get("keep_origin_open", True)
-        show_origin = task.get("show_origin", True)
-        new_project = task.get("new_project", True)
-
         log(f"Input file: {task.get('input_file')}")
         log(f"Analysis type: {', '.join(analysis_types(task.get('analysis'))) or 'none'}")
         log(f"Export paths: {export_paths(task) or []}")
 
-        op.set_show(show_origin)
+        op.set_show(task.get("show_origin", True))
 
-        if new_project:
+        if task.get("new_project", True):
             op.new()
 
         df = None
@@ -154,11 +159,11 @@ def run_task(task_path):
             log(f"Selected X: {x_name}")
             log(f"Selected Y: {y_names}")
 
-            template = task.get("template")
             plot_type = infer_plot_type(task)
+            template_name, plot_type = resolve_plot_template(task.get("template"), plot_type)
 
-            if template:
-                graph = plot_with_template(wks, template, x_idx, y_idxs)
+            if template_name:
+                graph = plot_with_template(wks, template_name, x_idx, y_idxs)
             elif plot_type == "line":
                 graph = plot_line(wks, x_idx, y_idxs)
             elif plot_type == "scatter":
@@ -169,6 +174,12 @@ def run_task(task_path):
                 raise ValueError(f"Unsupported wrapped plot_type: {plot_type}. Use labtalk/origin_python for custom plots.")
 
             apply_style(task.get("style", "default"))
+
+            if task.get("style_commands"):
+                log("Applying Origin style commands...")
+                ctx = {"op": op, "df": df, "wks": wks, "graph": graph, "outputs": outputs}
+                outputs["style_commands"] = apply_origin_styling(task["style_commands"], graph=graph, context=ctx)
+                ensure_success("Style commands", outputs["style_commands"])
 
         if task.get("analysis"):
             log("Running analysis...")
@@ -204,6 +215,32 @@ def run_task(task_path):
         log("DONE")
         return outputs
 
+    finally:
+        if not keep_open and op.oext:
+            op.exit()
+        end_time = datetime.now()
+        duration = (end_time - start_time).total_seconds()
+        log(f"End time: {end_time.isoformat(sep=' ', timespec='seconds')}")
+        log(f"Duration: {duration:.2f}s")
+
+
+def run_task(task_path):
+    task_path = resolve_task_path(task_path)
+    outputs = {}
+
+    try:
+        task = load_task(task_path)
+        if task.get("batch"):
+            batch_tasks = build_batch_tasks(task["batch"], task)
+            log(f"Batch files: {len(batch_tasks)}")
+            outputs["batch"] = []
+            for index, batch_task in enumerate(batch_tasks, start=1):
+                log(f"Running batch item {index}/{len(batch_tasks)}: {batch_task.get('input_file')}")
+                outputs["batch"].append(run_task_object(batch_task, f"{task_path}#{index}"))
+            return outputs
+
+        return run_task_object(task, str(task_path))
+
     except Exception as exc:
         traceback_text = traceback.format_exc()
         message = f"ERROR: {exc}"
@@ -212,19 +249,12 @@ def run_task(task_path):
         log_traceback(traceback_text)
         report_path = str(BASE / "outputs" / "report.md")
         try:
+            task = load_task(task_path)
             report_path = task.get("report_path", report_path)
-        except UnboundLocalError:
+        except Exception:
             pass
         outputs["report"] = write_error_report(str(exc), traceback_text, report_path)
         raise
-
-    finally:
-        if not keep_open and op.oext:
-            op.exit()
-        end_time = datetime.now()
-        duration = (end_time - start_time).total_seconds()
-        log(f"End time: {end_time.isoformat(sep=' ', timespec='seconds')}")
-        log(f"Duration: {duration:.2f}s")
 
 
 if __name__ == "__main__":

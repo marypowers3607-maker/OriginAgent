@@ -1,0 +1,35 @@
+{
+  "show_origin": false,
+  "keep_origin_open": false,
+  "new_project": true,
+  "input_file": "C:/OriginAI/data/test.xlsx",
+  "sheet_name": 0,
+  "plot": true,
+  "plot_type": "line",
+  "template": "line",
+  "x": "Time",
+  "y": "Temperature",
+  "style": "science",
+  "style_commands": [
+    {
+      "type": "origin_python",
+      "code": "outputs.setdefault('style_requests', []).append({'color': 'red', 'line_width': 2, 'line_style': 'dash', 'font': 'Arial'})"
+    }
+  ],
+  "analysis": {
+    "type": "fft",
+    "params": {
+      "x": "Time",
+      "y": "Temperature"
+    }
+  },
+  "export": {
+    "paths": [
+      "C:/OriginAI/agent/outputs/style_test.png"
+    ]
+  },
+  "save_project": true,
+  "project_path": "C:/OriginAI/agent/outputs/style_test.opju",
+  "report": true,
+  "report_path": "C:/OriginAI/agent/outputs/style_report.md"
+}

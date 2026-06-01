@@ -1,0 +1,26 @@
+{
+  "show_origin": false,
+  "keep_origin_open": false,
+  "new_project": true,
+  "batch": {
+    "folder": "C:/OriginAI/data",
+    "pattern": "*.xlsx"
+  },
+  "plot": true,
+  "plot_type": "line",
+  "template": "line",
+  "x": "Time",
+  "auto_all_y": true,
+  "style": "science",
+  "analysis": {
+    "type": "statistics"
+  },
+  "export": {
+    "paths": [
+      "C:/OriginAI/agent/outputs/batch_test.png"
+    ]
+  },
+  "save_project": false,
+  "report": true,
+  "report_path": "C:/OriginAI/agent/outputs/batch_report.md"
+}

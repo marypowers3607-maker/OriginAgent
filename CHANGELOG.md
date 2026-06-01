@@ -1,5 +1,12 @@
 # Changelog
 
+## v4.1.0
+
+- Add styling bridge
+- Add template bridge
+- Add batch scaffold
+- Improve planner style parsing
+
 ## v4.0.0
 
 - Added rule-based natural language planner.
