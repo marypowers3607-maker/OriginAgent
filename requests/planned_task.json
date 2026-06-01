@@ -1,0 +1,31 @@
+{
+  "show_origin": false,
+  "keep_origin_open": false,
+  "new_project": true,
+  "plot": true,
+  "style": "science",
+  "sheet_name": 0,
+  "labtalk": "",
+  "origin_python": "",
+  "input_file": "C:/OriginAI/data/test.xlsx",
+  "x": "Time",
+  "y": "Temperature",
+  "plot_type": "line",
+  "analysis": {
+    "type": "fft",
+    "params": {
+      "x": "Time",
+      "y": "Temperature"
+    }
+  },
+  "export": {
+    "paths": [
+      "C:/OriginAI/agent/outputs/planned_task.png",
+      "C:/OriginAI/agent/outputs/planned_task.tif"
+    ]
+  },
+  "save_project": true,
+  "project_path": "C:/OriginAI/agent/outputs/planned_task.opju",
+  "report": true,
+  "report_path": "C:/OriginAI/agent/outputs/report.md"
+}

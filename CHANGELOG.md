@@ -1,5 +1,12 @@
 # Changelog
 
+## v4.0.0
+
+- Added rule-based natural language planner.
+- Added `planner.py` to generate `requests/planned_task.json` without an LLM.
+- Added `run_planned.py` to plan and run natural language tasks in one command.
+- Added keyword parsing for plot type, analysis type, export formats, OPJU saving, reports, input file paths, and X/Y columns.
+
 ## v3.6.0
 
 - 支持命令行指定任务文件

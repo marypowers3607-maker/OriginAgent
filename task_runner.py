@@ -173,7 +173,8 @@ def run_task(task_path):
         if task.get("analysis"):
             log("Running analysis...")
             outputs["analysis"] = run_analysis(task["analysis"], df=df, output_dir=BASE / "outputs")
-            outputs["report"] = write_report(outputs["analysis"], BASE / "outputs" / "report.md")
+            report_path = task.get("report_path", str(BASE / "outputs" / "report.md"))
+            outputs["report"] = write_report(outputs["analysis"], report_path)
 
         if "labtalk" in task:
             log("Running LabTalk...")
@@ -209,7 +210,12 @@ def run_task(task_path):
         print(message)
         log(message)
         log_traceback(traceback_text)
-        outputs["report"] = write_error_report(str(exc), traceback_text, BASE / "outputs" / "report.md")
+        report_path = str(BASE / "outputs" / "report.md")
+        try:
+            report_path = task.get("report_path", report_path)
+        except UnboundLocalError:
+            pass
+        outputs["report"] = write_error_report(str(exc), traceback_text, report_path)
         raise
 
     finally:
