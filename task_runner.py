@@ -1,4 +1,6 @@
-﻿import json
+import json
+import sys
+import traceback
 from datetime import datetime
 from pathlib import Path
 
@@ -12,9 +14,10 @@ from tools.project import save_project
 from tools.execute_labtalk import execute as execute_labtalk
 from tools.execute_origin_python import execute as execute_origin_python
 from tools.analysis import run_analysis
-from tools.reporting import write_report
+from tools.reporting import write_report, write_error_report
 
 BASE = Path(r"C:\OriginAI\agent")
+
 
 def log(msg):
     print(msg)
@@ -23,14 +26,33 @@ def log(msg):
     with open(log_dir / "agent.log", "a", encoding="utf-8") as f:
         f.write(f"[{datetime.now()}] {msg}\n")
 
+
+def log_traceback(traceback_text):
+    log("Error traceback:")
+    for line in traceback_text.rstrip().splitlines():
+        log(line)
+
+
 def load_task(path):
     with open(path, "r", encoding="utf-8-sig") as f:
         return json.load(f)
+
+
+def resolve_task_path(arg=None):
+    if not arg:
+        return BASE / "requests" / "demo_task.json"
+
+    path = Path(arg)
+    if not path.is_absolute():
+        path = BASE / path
+    return path
+
 
 def col_index(df, col):
     if isinstance(col, int):
         return col
     return df.columns.get_loc(col)
+
 
 def normalize_y(df, task, x_name):
     y = task.get("y")
@@ -46,6 +68,7 @@ def normalize_y(df, task, x_name):
 
     return y
 
+
 def infer_plot_type(task):
     if task.get("plot_type"):
         return str(task["plot_type"]).lower()
@@ -59,28 +82,59 @@ def infer_plot_type(task):
 
     return "line"
 
+
+def analysis_types(analysis):
+    if not analysis:
+        return []
+    if isinstance(analysis, list):
+        return [str(item.get("type", item)).lower() if isinstance(item, dict) else str(item).lower() for item in analysis]
+    if isinstance(analysis, dict):
+        return [str(analysis.get("type", "")).lower()]
+    return [str(analysis).lower()]
+
+
+def export_paths(task):
+    export = task.get("export") or {}
+    paths = export.get("paths", [])
+    if isinstance(paths, str):
+        return [paths]
+    return list(paths)
+
+
+def ensure_success(label, result):
+    if isinstance(result, dict) and result.get("status") == "error":
+        raise RuntimeError(f"{label} failed: {result.get('error')}")
+
+
 def run_task(task_path):
-    task_path = Path(task_path)
-    task = load_task(task_path)
-
-    keep_open = task.get("keep_origin_open", True)
-    show_origin = task.get("show_origin", True)
-    new_project = task.get("new_project", True)
-
-    op.set_show(show_origin)
-
-    if new_project:
-        try:
-            op.new()
-        except Exception:
-            pass
-
-    df = None
-    wks = None
-    graph = None
+    task_path = resolve_task_path(task_path)
+    start_time = datetime.now()
+    keep_open = True
     outputs = {}
 
+    log("=" * 72)
+    log(f"Task path: {task_path}")
+    log(f"Start time: {start_time.isoformat(sep=' ', timespec='seconds')}")
+
     try:
+        task = load_task(task_path)
+        keep_open = task.get("keep_origin_open", True)
+        show_origin = task.get("show_origin", True)
+        new_project = task.get("new_project", True)
+
+        log(f"Input file: {task.get('input_file')}")
+        log(f"Analysis type: {', '.join(analysis_types(task.get('analysis'))) or 'none'}")
+        log(f"Export paths: {export_paths(task) or []}")
+
+        op.set_show(show_origin)
+
+        if new_project:
+            op.new()
+
+        df = None
+        wks = None
+        graph = None
+
         if task.get("input_file"):
             log(f"Loading data: {task['input_file']}")
             df = load_table(task["input_file"], task.get("sheet_name", 0))
@@ -121,20 +175,22 @@ def run_task(task_path):
             outputs["analysis"] = run_analysis(task["analysis"], df=df, output_dir=BASE / "outputs")
             outputs["report"] = write_report(outputs["analysis"], BASE / "outputs" / "report.md")
 
-        if task.get("labtalk"):
+        if "labtalk" in task:
             log("Running LabTalk...")
-            outputs["labtalk"] = execute_labtalk(task["labtalk"])
+            outputs["labtalk"] = execute_labtalk(task.get("labtalk"))
+            ensure_success("LabTalk", outputs["labtalk"])
 
-        if task.get("origin_python"):
+        if "origin_python" in task:
             log("Running Origin Python...")
             ctx = {
                 "op": op,
                 "df": df,
                 "wks": wks,
                 "graph": graph,
-                "outputs": outputs
+                "outputs": outputs,
             }
-            execute_origin_python(task["origin_python"], ctx)
+            outputs["origin_python"] = execute_origin_python(task.get("origin_python"), ctx)
+            ensure_success("Origin Python", outputs["origin_python"])
 
         if graph is not None and task.get("export"):
             log("Exporting figures...")
@@ -147,11 +203,28 @@ def run_task(task_path):
         log("DONE")
         return outputs
 
+    except Exception as exc:
+        traceback_text = traceback.format_exc()
+        message = f"ERROR: {exc}"
+        print(message)
+        log(message)
+        log_traceback(traceback_text)
+        outputs["report"] = write_error_report(str(exc), traceback_text, BASE / "outputs" / "report.md")
+        raise
+
     finally:
         if not keep_open and op.oext:
             op.exit()
+        end_time = datetime.now()
+        duration = (end_time - start_time).total_seconds()
+        log(f"End time: {end_time.isoformat(sep=' ', timespec='seconds')}")
+        log(f"Duration: {duration:.2f}s")
+
 
 if __name__ == "__main__":
-    default_task = BASE / "requests" / "demo_task.json"
-    result = run_task(default_task)
-    print(result)
+    task_arg = sys.argv[1] if len(sys.argv) > 1 else None
+    try:
+        result = run_task(task_arg)
+        print(result)
+    except Exception:
+        sys.exit(1)

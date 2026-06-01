@@ -1,5 +1,13 @@
 # Changelog
 
+## v3.6.0
+
+- 支持命令行指定任务文件
+- 增强错误处理
+- 增强日志
+- LabTalk 安全保护
+- Origin Python 安全保护
+
 ## v3.5.0
 
 - Added JSON `analysis` support for statistics, linear fit, peak analysis, FFT, PCA, and custom LabTalk.

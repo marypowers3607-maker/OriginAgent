@@ -21,6 +21,27 @@ def write_report(results, path):
     return str(path)
 
 
+def write_error_report(error, traceback_text, path):
+    path = Path(path)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    blocks = [
+        "# OriginAgent Analysis Report",
+        "",
+        "## Error",
+        "",
+        f"- **Error:** {error}",
+        "",
+        "### Traceback",
+        "",
+        "```text",
+        traceback_text.rstrip(),
+        "```",
+        "",
+    ]
+    path.write_text("\n".join(blocks), encoding="utf-8")
+    return str(path)
+
+
 def _flatten(results):
     if isinstance(results, list):
         for item in results:

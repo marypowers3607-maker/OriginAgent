@@ -1,4 +1,4 @@
-# OriginAgent v3.5
+# OriginAgent v3.6
 
 目标：
 
@@ -27,8 +27,10 @@
 
 ## 全功能兜底能力
 
-- labtalk: 执行任意 Origin LabTalk
-- origin_python: 执行任意 Origin Python
+- `labtalk`: 执行任意 Origin LabTalk
+- `origin_python`: 执行任意 Origin Python
+
+v3.6 增强了通用执行器可靠性：支持命令行指定任务文件、错误报告、错误堆栈日志、LabTalk 空脚本跳过与 `type -b` warning、Origin Python 空代码跳过与结构化异常返回。
 
 ## 分析输出
 
@@ -39,12 +41,20 @@
 
 ## 运行
 
+```powershell
 cd C:\OriginAI\agent
 py task_runner.py
+py task_runner.py requests/fft_test.json
+py task_runner.py requests/pca_test.json
+py task_runner.py requests/peak_test.json
+py task_runner.py C:/OriginAI/agent/requests/pca_test.json
+```
 
-## 任务文件
+未传任务文件参数时，默认使用：
 
+```text
 C:\OriginAI\agent\requests\demo_task.json
+```
 
 ## analysis 示例
 
