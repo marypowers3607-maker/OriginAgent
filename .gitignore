@@ -1,0 +1,36 @@
+﻿# Python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# OriginAgent runtime outputs
+outputs/*
+logs/*
+
+# Keep folders
+!outputs/.gitkeep
+!logs/.gitkeep
+
+# Origin project / exported figures
+*.opju
+*.opj
+*.png
+*.jpg
+*.jpeg
+*.tif
+*.tiff
+*.pdf
+*.svg
+*.eps
+
+# Editor / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
